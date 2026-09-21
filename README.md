@@ -22,8 +22,6 @@ Autor: Nicolas Begnini Leite
 8. [Como executar](#8-como-executar)
 9. [Exemplos de uso](#9-exemplos-de-uso)
 10. [Decisões arquiteturais](#10-decisões-arquiteturais)
-11. [Limitações conhecidas e evolução](#11-limitações-conhecidas-e-evolução)
-12. [Mapa de entregáveis do desafio](#12-mapa-de-entregáveis-do-desafio)
 
 ---
 
