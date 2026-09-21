@@ -1,9 +1,8 @@
-# API REST de Pedidos — Python + Flask + MVC
+# API REST de Pedidos — Flask + MVC
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.1-000000?logo=flask&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-persist%C3%AAncia-003B57?logo=sqlite&logoColor=white)
-![Testes](https://img.shields.io/badge/testes-pytest-0A9EDC?logo=pytest&logoColor=white)
 
 **Desafio Final — Bootcamp Arquiteto(a) de Software (Pós-graduação, AST267A)**
 Autor: Nicolas Begnini Leite
@@ -21,10 +20,9 @@ Autor: Nicolas Begnini Leite
 7. [Endpoints da API](#7-endpoints-da-api)
 8. [Como executar](#8-como-executar)
 9. [Exemplos de uso](#9-exemplos-de-uso)
-10. [Testes automatizados](#10-testes-automatizados)
-11. [Decisões arquiteturais](#11-decisões-arquiteturais)
-12. [Limitações conhecidas e evolução](#12-limitações-conhecidas-e-evolução)
-13. [Mapa de entregáveis do desafio](#13-mapa-de-entregáveis-do-desafio)
+10. [Decisões arquiteturais](#10-decisões-arquiteturais)
+11. [Limitações conhecidas e evolução](#11-limitações-conhecidas-e-evolução)
+12. [Mapa de entregáveis do desafio](#12-mapa-de-entregáveis-do-desafio)
 
 ---
 
@@ -48,7 +46,6 @@ A persistência dos dados foi implementada (diferencial previsto no enunciado) c
 | Flask 3.1 | Framework web / API REST |
 | Flask-SQLAlchemy 3.1 | ORM e integração com o banco |
 | SQLite | Banco de dados relacional (arquivo local, sem instalação) |
-| pytest | Testes automatizados |
 | draw.io | Diagramas C4 e UML |
 
 ## 3. Arquitetura
@@ -92,8 +89,8 @@ As dependências apontam sempre em um único sentido. O Controller nunca acessa 
 | **MVC** | Estrutura geral | Separação entre dados, apresentação e controle. |
 | **Repository** | `repositories/` | Desacopla o domínio da tecnologia de persistência. |
 | **Service Layer** | `services/` | Centraliza as regras de negócio. |
-| **Dependency Injection** | `PedidoService(repository=...)` | Permite substituir o repositório em testes. |
-| **Application Factory** | `create_app()` | Cria a aplicação com configurações diferentes (produção e testes). |
+| **Dependency Injection** | `PedidoService(repository=...)` | Permite substituir o repositório sem alterar o Service. |
+| **Application Factory** | `create_app()` | Cria a aplicação a partir de uma configuração, facilitando a troca de ambiente. |
 | **Blueprint** | `pedido_bp` | Modulariza as rotas por recurso. |
 
 ### Requisitos arquiteturais atendidos
@@ -101,7 +98,7 @@ As dependências apontam sempre em um único sentido. O Controller nunca acessa 
 | Atributo de qualidade | Como é atendido |
 |---|---|
 | Manutenibilidade | Camadas coesas, com responsabilidades isoladas. |
-| Testabilidade | Application Factory, injeção de dependência e banco em memória nos testes. |
+| Testabilidade | Application Factory e injeção de dependência permitem isolar e substituir componentes. |
 | Modificabilidade | Troca de banco restrita ao Repository. |
 | Interoperabilidade | REST + JSON, padrão aberto consumível por qualquer parceiro. |
 | Escalabilidade | API *stateless*, permitindo várias instâncias atrás de um balanceador. |
@@ -169,8 +166,6 @@ Os diagramas foram elaborados no **draw.io** seguindo o **modelo C4**. O arquivo
 │   │   └── pedido_service.py        # Regras de negócio e validações
 │   └── repositories/
 │       └── pedido_repository.py     # Acesso ao banco de dados
-├── tests/
-│   └── test_pedido_api.py           # Testes automatizados
 ├── docs/                            # Diagramas (C4/UML) e documentação
 ├── run.py                           # Ponto de entrada da aplicação
 ├── requirements.txt                 # Dependências
@@ -185,7 +180,7 @@ Os diagramas foram elaborados no **draw.io** seguindo o **modelo C4**. O arquivo
 | `controllers/pedido_controller.py` | Mapeia URLs e verbos HTTP para as operações do Service. |
 | `services/pedido_service.py` | Valida dados e executa as regras do negócio. |
 | `repositories/pedido_repository.py` | Executa consultas e gravações no banco. |
-| `config.py` | Concentra configurações (URI do banco, modo de teste). |
+| `config.py` | Concentra as configurações (URI do banco de dados). |
 | `extensions.py` | Evita importações circulares ao criar o `db` fora da factory. |
 | `run.py` | Inicia o servidor (equivalente à classe `ApiApplication` do Spring). |
 
@@ -329,37 +324,19 @@ curl -X DELETE http://127.0.0.1:5000/pedidos/1
 
 > No PowerShell, `curl` é um apelido de `Invoke-WebRequest` e não aceita essas opções. Use os exemplos com `Invoke-RestMethod` acima ou chame `curl.exe` explicitamente.
 
-## 10. Testes automatizados
-
-Os testes usam banco SQLite **em memória**, portanto não alteram o `pedidos.db`.
-
-```powershell
-python -m pytest -q
-```
-
-Cenários cobertos:
-
-- criação e busca por ID;
-- listagem e contagem;
-- busca parcial por nome;
-- atualização parcial;
-- exclusão;
-- respostas `404` para recursos inexistentes (GET, PUT e DELETE);
-- validações de entrada (campos ausentes, quantidade zero, valor negativo, status inválido, corpo vazio ou não JSON) retornando `400`.
-
-## 11. Decisões arquiteturais
+## 10. Decisões arquiteturais
 
 | Decisão | Motivo | Trade-off |
 |---|---|---|
 | **Flask** | Leve e direto; adequado a uma API de escopo pequeno. | Menos recursos prontos que frameworks maiores (ex.: Django). |
-| **Camada Service** | Mantém o Controller livre de regra de negócio e facilita testes. | Mais arquivos para um CRUD simples. |
+| **Camada Service** | Mantém o Controller livre de regra de negócio e favorece o reuso. | Mais arquivos para um CRUD simples. |
 | **Repository Pattern** | Isola a tecnologia de persistência. | Uma camada adicional de indireção. |
 | **View como JSON** | Não expõe o Model diretamente e permite evoluir o contrato da API sem alterar o domínio. | Código extra de serialização. |
 | **SQLite** | Zero configuração e persistência real para o desafio. | Não recomendado para alta concorrência; em produção, usar PostgreSQL ou similar. |
-| **Application Factory** | Configuração por ambiente e testes isolados. | Exige registrar componentes dentro da função. |
+| **Application Factory** | Configuração por ambiente. | Exige registrar componentes dentro da função. |
 | **Códigos HTTP semânticos** | `201`, `204`, `400` e `404` comunicam o resultado de forma padronizada. | — |
 
-## 12. Limitações conhecidas e evolução
+## 11. Limitações conhecidas e evolução
 
 Esta é uma implementação voltada ao desafio acadêmico. Para uso em produção, os próximos passos recomendados seriam:
 
@@ -368,10 +345,10 @@ Esta é uma implementação voltada ao desafio acadêmico. Para uso em produçã
 - **Documentação OpenAPI/Swagger** gerada automaticamente;
 - **Banco de dados de produção** (PostgreSQL) e **migrações** com Alembic;
 - **Servidor WSGI** (Gunicorn ou Waitress) no lugar do servidor de desenvolvimento do Flask — o `run.py` usa `debug=True`, adequado apenas para ambiente local;
-- **Conteinerização** com Docker e pipeline de **CI** executando os testes;
+- **Conteinerização** com Docker e pipeline de **CI**;
 - **Rate limiting** e **logs estruturados** para observabilidade e proteção da API.
 
-## 13. Mapa de entregáveis do desafio
+## 12. Mapa de entregáveis do desafio
 
 | # | Entregável | Onde encontrar |
 |---|---|---|
