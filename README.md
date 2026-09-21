@@ -359,27 +359,6 @@ curl -X DELETE http://127.0.0.1:5000/pedidos/1
 | **OpenAPI + Swagger UI** (contrato em `openapi.yaml`, fora dos controllers) | Documentação interativa e padronizada; mantém os controllers limpos; contrato reutilizável em outras ferramentas. | O YAML é mantido manualmente e pode divergir do código se não for atualizado junto com os endpoints. |
 | **Códigos HTTP semânticos** | `201`, `204`, `400` e `404` comunicam o resultado de forma padronizada. | — |
 
-## 11. Limitações conhecidas e evolução
-
-Esta é uma implementação voltada ao desafio acadêmico. Para uso em produção, os próximos passos recomendados seriam:
-
-- **Autenticação e autorização** (API Key ou OAuth2/JWT), já que a API é exposta a parceiros externos;
-- **Paginação** e filtros na listagem, para volumes grandes de dados;
-- **Banco de dados de produção** (PostgreSQL) e **migrações** com Alembic;
-- **Servidor WSGI** (Gunicorn ou Waitress) no lugar do servidor de desenvolvimento do Flask — o `run.py` usa `debug=True`, adequado apenas para ambiente local;
-- **Conteinerização** com Docker e pipeline de **CI**;
-- **Rate limiting** e **logs estruturados** para observabilidade e proteção da API.
-
-## 12. Mapa de entregáveis do desafio
-
-| # | Entregável | Onde encontrar |
-|---|---|---|
-| 1 | Arquitetura do software (C4 / UML / draw.io) | Seção [4](#4-diagramas) e pasta `docs/` |
-| 2 | Estrutura de pastas do projeto MVC | Seção [5](#5-estrutura-de-pastas) |
-| 3 | Explicação da estrutura e dos elementos | Seções [3](#3-arquitetura) e [5](#5-estrutura-de-pastas) |
-| 4 | *(Opcional)* Código funcionando | Este repositório — seção [8](#8-como-executar) |
-| 5 | *(Opcional)* Persistência funcionando | SQLite + SQLAlchemy — seção [6](#6-modelo-de-dados) |
-
 ---
 
 **Autor:** Nicolas Begnini Leite
