@@ -3,6 +3,7 @@
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.1-000000?logo=flask&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-persist%C3%AAncia-003B57?logo=sqlite&logoColor=white)
+![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0-6BA539?logo=swagger&logoColor=white)
 
 **Desafio Final — Bootcamp Arquiteto(a) de Software (Pós-graduação, AST267A)**
 Autor: Nicolas Begnini Leite
@@ -46,6 +47,7 @@ A persistência dos dados foi implementada (diferencial previsto no enunciado) c
 | Flask 3.1 | Framework web / API REST |
 | Flask-SQLAlchemy 3.1 | ORM e integração com o banco |
 | SQLite | Banco de dados relacional (arquivo local, sem instalação) |
+| OpenAPI 3.0 + Swagger UI | Contrato e documentação interativa da API |
 | draw.io | Diagramas C4 e UML |
 
 ## 3. Arquitetura
@@ -156,6 +158,9 @@ Os diagramas foram elaborados no **draw.io** seguindo o **modelo C4**. O arquivo
 │   ├── __init__.py                  # Application Factory (create_app)
 │   ├── config.py                    # Configurações por ambiente
 │   ├── extensions.py                # Instância do banco (db)
+│   ├── swagger.py                   # Registro do Swagger UI e do contrato OpenAPI
+│   ├── openapi/
+│   │   └── openapi.yaml             # Contrato OpenAPI 3.0 da API
 │   ├── models/
 │   │   └── pedido.py                # Model: entidade Pedido
 │   ├── views/
@@ -182,6 +187,8 @@ Os diagramas foram elaborados no **draw.io** seguindo o **modelo C4**. O arquivo
 | `repositories/pedido_repository.py` | Executa consultas e gravações no banco. |
 | `config.py` | Concentra as configurações (URI do banco de dados). |
 | `extensions.py` | Evita importações circulares ao criar o `db` fora da factory. |
+| `swagger.py` | Publica a interface Swagger UI (`/docs`) e o contrato (`/openapi.yaml`). Isolado dos controllers. |
+| `openapi/openapi.yaml` | Contrato da API: endpoints, parâmetros, schemas e códigos de resposta. |
 | `run.py` | Inicia o servidor (equivalente à classe `ApiApplication` do Spring). |
 
 ## 6. Modelo de dados
@@ -201,6 +208,19 @@ Tabela `pedidos`:
 ## 7. Endpoints da API
 
 URL base: `http://127.0.0.1:5000`
+
+### Documentação interativa (Swagger UI)
+
+Com a API em execução, acesse **http://127.0.0.1:5000/docs**. A página lista todos os endpoints e permite testá-los pelo navegador: abra um endpoint, clique em **Try it out**, preencha os campos e clique em **Execute**.
+
+| Recurso | URL |
+|---|---|
+| Swagger UI (interface interativa) | `/docs` (a raiz `/` redireciona para cá) |
+| Contrato OpenAPI 3.0 (YAML) | `/openapi.yaml` |
+
+O contrato pode ser importado em ferramentas como Postman, Insomnia ou geradores de cliente/SDK.
+
+### Resumo dos endpoints
 
 | Operação | Método | Rota | Sucesso | Erros |
 |---|---|---|---|---|
@@ -276,9 +296,11 @@ python -m pip install -r requirements.txt
 python run.py
 ```
 
-A API sobe em **http://127.0.0.1:5000**. Na primeira execução o arquivo de banco `pedidos.db` é criado automaticamente. Para usar outro banco, defina a variável de ambiente `DATABASE_URL`.
+A API sobe em **http://127.0.0.1:5000**. A documentação interativa (Swagger) fica em **http://127.0.0.1:5000/docs**. Na primeira execução o arquivo de banco `pedidos.db` é criado automaticamente. Para usar outro banco, defina a variável de ambiente `DATABASE_URL`.
 
 ## 9. Exemplos de uso
+
+O caminho mais simples é o **Swagger UI** (`/docs`). Os exemplos abaixo mostram as mesmas chamadas por linha de comando.
 
 ### PowerShell (Windows)
 
@@ -334,6 +356,7 @@ curl -X DELETE http://127.0.0.1:5000/pedidos/1
 | **View como JSON** | Não expõe o Model diretamente e permite evoluir o contrato da API sem alterar o domínio. | Código extra de serialização. |
 | **SQLite** | Zero configuração e persistência real para o desafio. | Não recomendado para alta concorrência; em produção, usar PostgreSQL ou similar. |
 | **Application Factory** | Configuração por ambiente. | Exige registrar componentes dentro da função. |
+| **OpenAPI + Swagger UI** (contrato em `openapi.yaml`, fora dos controllers) | Documentação interativa e padronizada; mantém os controllers limpos; contrato reutilizável em outras ferramentas. | O YAML é mantido manualmente e pode divergir do código se não for atualizado junto com os endpoints. |
 | **Códigos HTTP semânticos** | `201`, `204`, `400` e `404` comunicam o resultado de forma padronizada. | — |
 
 ## 11. Limitações conhecidas e evolução
@@ -342,7 +365,6 @@ Esta é uma implementação voltada ao desafio acadêmico. Para uso em produçã
 
 - **Autenticação e autorização** (API Key ou OAuth2/JWT), já que a API é exposta a parceiros externos;
 - **Paginação** e filtros na listagem, para volumes grandes de dados;
-- **Documentação OpenAPI/Swagger** gerada automaticamente;
 - **Banco de dados de produção** (PostgreSQL) e **migrações** com Alembic;
 - **Servidor WSGI** (Gunicorn ou Waitress) no lugar do servidor de desenvolvimento do Flask — o `run.py` usa `debug=True`, adequado apenas para ambiente local;
 - **Conteinerização** com Docker e pipeline de **CI**;

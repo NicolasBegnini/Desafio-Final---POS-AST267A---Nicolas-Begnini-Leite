@@ -1,0 +1,264 @@
+openapi: 3.0.3
+info:
+  title: API de Pedidos
+  version: 1.0.0
+  description: |
+    API REST que disponibiliza publicamente os dados de **Pedido** aos parceiros da empresa.
+
+    Desenvolvida com **Flask** no padrão arquitetural **MVC** (Controller, Service, Repository e Model).
+    Desafio Final do Bootcamp Arquiteto(a) de Software (AST267A).
+
+    **Como testar:** abra um endpoint, clique em **Try it out**, preencha os campos e clique em **Execute**.
+  contact:
+    name: Nicolas Begnini Leite
+servers:
+  - url: http://127.0.0.1:5000
+    description: Servidor local de desenvolvimento
+tags:
+  - name: Pedidos
+    description: Operações de CRUD, contagem e buscas de pedidos
+
+paths:
+  /pedidos:
+    get:
+      tags: [Pedidos]
+      summary: Lista todos os pedidos (Find All)
+      operationId: listarTodos
+      responses:
+        "200":
+          description: Lista de pedidos (vazia quando não há registros)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Pedido"
+    post:
+      tags: [Pedidos]
+      summary: Cria um novo pedido (Create)
+      operationId: criarPedido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PedidoCriar"
+            example:
+              nome_cliente: Maria Silva
+              produto: Notebook
+              quantidade: 1
+              valor_total: 4500.0
+      responses:
+        "201":
+          description: Pedido criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pedido"
+        "400":
+          description: Dados inválidos ou campos obrigatórios ausentes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                erro: "Campos obrigatórios ausentes: produto, quantidade."
+
+  /pedidos/contar:
+    get:
+      tags: [Pedidos]
+      summary: Retorna o número total de pedidos (Contagem)
+      operationId: contarPedidos
+      responses:
+        "200":
+          description: Total de registros
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    example: 3
+                required: [total]
+
+  /pedidos/nome/{nome}:
+    get:
+      tags: [Pedidos]
+      summary: Busca pedidos pelo nome do cliente (Find By Name)
+      description: |
+        Busca **parcial**: `mar` encontra "Maria Silva".
+        Sem resultados, retorna lista vazia. Para caracteres acentuados, o SQLite diferencia maiúsculas de minúsculas.
+      operationId: buscarPorNome
+      parameters:
+        - name: nome
+          in: path
+          required: true
+          description: Nome (ou parte do nome) do cliente
+          schema:
+            type: string
+          example: maria
+      responses:
+        "200":
+          description: Pedidos cujo nome de cliente contém o texto informado
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Pedido"
+
+  /pedidos/{pedido_id}:
+    parameters:
+      - name: pedido_id
+        in: path
+        required: true
+        description: Identificador do pedido
+        schema:
+          type: integer
+        example: 1
+    get:
+      tags: [Pedidos]
+      summary: Busca um pedido pelo ID (Find By ID)
+      operationId: buscarPorId
+      responses:
+        "200":
+          description: Pedido encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pedido"
+        "404":
+          description: Pedido não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                erro: Pedido 99 não encontrado
+    put:
+      tags: [Pedidos]
+      summary: Atualiza um pedido (Update)
+      description: Atualização **parcial**. Somente os campos enviados são alterados.
+      operationId: atualizarPedido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PedidoAtualizar"
+            example:
+              status: PAGO
+      responses:
+        "200":
+          description: Pedido atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pedido"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+              example:
+                erro: "'quantidade' deve ser um inteiro maior que zero."
+        "404":
+          description: Pedido não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+    delete:
+      tags: [Pedidos]
+      summary: Exclui um pedido (Delete)
+      operationId: deletarPedido
+      responses:
+        "204":
+          description: Pedido excluído (sem conteúdo na resposta)
+        "404":
+          description: Pedido não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erro"
+
+components:
+  schemas:
+    StatusPedido:
+      type: string
+      enum: [CRIADO, PAGO, ENVIADO, ENTREGUE, CANCELADO]
+      default: CRIADO
+    Pedido:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nome_cliente:
+          type: string
+          example: Maria Silva
+        produto:
+          type: string
+          example: Notebook
+        quantidade:
+          type: integer
+          example: 1
+        valor_total:
+          type: number
+          format: float
+          example: 4500.0
+        status:
+          $ref: "#/components/schemas/StatusPedido"
+        criado_em:
+          type: string
+          format: date-time
+          example: "2026-09-21T03:01:39.037756"
+      required: [id, nome_cliente, produto, quantidade, valor_total, status, criado_em]
+    PedidoCriar:
+      type: object
+      properties:
+        nome_cliente:
+          type: string
+          minLength: 1
+          example: Maria Silva
+        produto:
+          type: string
+          minLength: 1
+          example: Notebook
+        quantidade:
+          type: integer
+          minimum: 1
+          example: 1
+        valor_total:
+          type: number
+          minimum: 0
+          example: 4500.0
+        status:
+          $ref: "#/components/schemas/StatusPedido"
+      required: [nome_cliente, produto, quantidade, valor_total]
+    PedidoAtualizar:
+      type: object
+      description: Todos os campos são opcionais; envie apenas o que deseja alterar.
+      properties:
+        nome_cliente:
+          type: string
+          minLength: 1
+        produto:
+          type: string
+          minLength: 1
+        quantidade:
+          type: integer
+          minimum: 1
+        valor_total:
+          type: number
+          minimum: 0
+        status:
+          $ref: "#/components/schemas/StatusPedido"
+    Erro:
+      type: object
+      properties:
+        erro:
+          type: string
+      required: [erro]
