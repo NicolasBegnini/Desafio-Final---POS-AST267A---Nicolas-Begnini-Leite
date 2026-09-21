@@ -136,7 +136,7 @@ sequenceDiagram
 
 ## 4. Diagramas
 
-Os diagramas foram elaborados no **draw.io** seguindo o **modelo C4**. O arquivo-fonte editável está em [`docs/c4-api-pedidos.drawio`](docs/c4-api-pedidos.drawio).
+Os diagramas foram elaborados no **draw.io** seguindo o **modelo C4**. O arquivo-fonte editável está em [`docs/c4-api-pedidos.drawio`](docs/Arq_AST267A_DesFinal_NicolasBegniniLeite.drawio).
 
 ### C4 — Nível 1: Contexto
 ![C4 Nível 1 - Contexto](docs/c4-nivel1-contexto.png)
