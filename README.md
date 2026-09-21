@@ -1,4 +1,4 @@
-# API REST de Pedidos — Flask + MVC
+# API REST de Pedidos — Python + Flask + MVC
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.1-000000?logo=flask&logoColor=white)
